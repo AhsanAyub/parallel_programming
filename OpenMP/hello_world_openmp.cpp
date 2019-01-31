@@ -1,5 +1,7 @@
 #include <iostream>
 #include <omp.h>
+//One encountered HPC cluster didn't compile atoi function, so the fillowing library had to be called
+#include <cstdlib>
 
 using namespace std;
 
