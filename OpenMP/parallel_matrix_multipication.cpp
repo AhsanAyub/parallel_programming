@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cstlib>
+#include <cstdlib>
 #include <cmath>
 #include <omp.h>
 
