@@ -51,42 +51,41 @@ int main (int argc, char *argv[])
     int chunkRemainder = index % thread_count;
     int startIndex = -1, endIndex = -1;
 
-    // Compute the runtime of matrix multiplication only.
-    double wallTime = omp_get_wtime();
+    // Compute the start of the runtime of matrix multiplication only.
+    double wallTimeStart = omp_get_wtime();
 
     //Getting into the parallel region
-    #pragma omp parallel num_threads(thread_count)
+    #pragma omp parallel firstprivate(startIndex, endIndex) num_threads(thread_count)
     {
         int myRank = omp_get_thread_num(); //What thread am I?
 
-        // Executed one thead at a time
-        #pragma omp critical
+        // Computing two varibles to buffer through the array which are derivatives from myRank variable
+        startIndex = myRank * chunk;
+        if((startIndex + chunk) > index)
+            endIndex = chunkRemainder;
+        else
+            endIndex = startIndex + chunk;
+        
+        //cout << endl << " ------------------------------------- " << endl;
+        //cout << "Thread Number: " << myRank << ", Start index: " << startIndex << ", and End Index: " << endIndex << endl;
+        
+        for(int i = startIndex; i < endIndex; i++)
         {
-            // Computing two varibles to buffer through the array which are derivatives from myRank variable
-            startIndex = myRank * chunk;
-            if((startIndex + chunk) > index)
-                endIndex = chunkRemainder;
-            else
-                endIndex = startIndex + chunk;
-            
-            //cout << endl << " ------------------------------------- " << endl;
-            //cout << "Thread Number: " << myRank << ", Start index: " << startIndex << ", and End Index: " << endIndex << endl;
-            
-            for(int i = startIndex; i < endIndex; i++)
+            for(int j = 0; j < index; j++)
             {
-                for(int j = 0; j < index; j++)
-                {
-                    int sum = 0;
-                    for(int bufferIndex = 0; bufferIndex < index; bufferIndex++)
-                       sum +=  matrix[j][bufferIndex] * matrix[bufferIndex][j];
-                    result[i][j] = sum;
-                }
+                int sum = 0;
+                for(int bufferIndex = 0; bufferIndex < index; bufferIndex++)
+                    sum +=  matrix[j][bufferIndex] * matrix[bufferIndex][j];
+                result[i][j] = sum;
             }
         }
     }
 
+    // Compute the end of the runtime of matrix multiplication only.
+    double wallTimeEnd = omp_get_wtime();
+
     // Displaying the code run time
-    cout << endl << "Code compilation time: " << wallTime << endl;
+    cout << "Code compilation time: " << (wallTimeStart - wallTimeEnd) << endl;
 
     // Printing array element
     //printArray(result, index, index);
