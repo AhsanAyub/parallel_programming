@@ -1,6 +1,15 @@
+/*
+ *    parallel_matrix_multipication.cpp
+ *    Purpose: Calculation of the runtime of squrate matrix multiplicaiton using OpenMP
+ *
+ *    @author Md. Ahsan Ayub
+ *    @version 1.5 02/12/2019 
+ */
+
 #include <iostream>
 #include <cmath>
 #include <omp.h>
+#include <cstring>
 #include <cstdlib>
 
 using namespace std;
@@ -66,10 +75,7 @@ int main (int argc, char *argv[])
             endIndex = chunkRemainder;
         else
             endIndex = startIndex + chunk;
-        
-        //cout << endl << " ------------------------------------- " << endl;
-        //cout << "Thread Number: " << myRank << ", Start index: " << startIndex << ", and End Index: " << endIndex << endl;
-        
+
         for(int i = startIndex; i < endIndex; i++)
         {
             for(int j = 0; j < index; j++)
@@ -86,10 +92,15 @@ int main (int argc, char *argv[])
     double wallTimeEnd = omp_get_wtime();
 
     // Displaying the code run time
-    cout << "Matrix Size: " << index << "\tThread: " << thread_count << "\tCode compilation time: " << (wallTimeStart - wallTimeEnd) << endl;
+    cout << "Matrix Size: " << index << "\tThread: " << thread_count << "\tCode compilation time: " << (wallTimeEnd - wallTimeStart) << endl;
 
-    // Printing array element
+    /* // Printing array element
     printArray(result, index, index);
+    */
+
+    // Deallocate memory of the dynamically created 2D arrays
+    memset(result, 0, index);
+    memset(matrix, 0, index);
 
     return 0;
 }
