@@ -1,4 +1,4 @@
-// This is a sample program to understand MPI_Send and MPI_Recv funcitonality
+// This is a sample program to understand MPI_Send and MPI_Recv
 // The program is designed to send a message from Process 0 and
 // Process 1 will receive it.
 // Other proceesses have got no functionalities.
