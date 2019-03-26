@@ -1,7 +1,12 @@
-// This is a sample program to understand MPI_Send and MPI_Recv
-// The program is designed to send a message from Process 0 and
-// Process 1 will receive it.
-// Other proceesses have got no functionalities.
+/*
+ * This is a custom MPI Bcast implementation program that is implemented to broadcast an array of double 
+ * with 100,000 elements. The custom built routine is then compared with the default MPI Bcast routine to
+ * test the scalability and performance evaluation.
+ *
+ * @author Md. Ahsan Ayub
+ * @version 1.8 03/25/2019 
+ *
+ */
 
 #include <iostream>
 #include <mpi.h>

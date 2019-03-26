@@ -1,3 +1,11 @@
+/*
+ * The custom MPI Bcast implementation program.
+ *
+ * @author Md. Ahsan Ayub
+ * @version 1.2 03/25/2019 
+ *
+ */
+
 // Including the custom MPI Bcast implementation library (Credit: Md. Ahsan Ayub)
 #include "maa_bcast.h"
 
