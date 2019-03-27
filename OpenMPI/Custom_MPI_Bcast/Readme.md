@@ -2,7 +2,7 @@
 Comparison and Implementation of Custom MPI_Bcast 
 
 ### Description
-This is sample program to implement a custom MPI broadcast routine. The custom drive program didn't use any other MPI group communication routine other than MPI point-to-point communication. However, the arguments of the custom broadcast routine is same as `MPI_Bcast`. The program has been tested with an array of double with 100,000 element and then compared with the default routine.
+This is a sample program to implement a custom MPI broadcast. The custom drive program didn't use any other MPI group communication routine other than MPI point-to-point communication, e.g. `MPI_Send` and `MPI_Recv`. However, the arguments of the custom broadcast routine is same as `MPI_Bcast`. The program has been tested with an array of double with 100,000 elements and then compared with the default routine.
 
 ### Prerequisites
 
