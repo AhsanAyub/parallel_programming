@@ -16,7 +16,7 @@ Step 3. command: make run
 Step 4. command: make clearn
 
 ### Example:
-.. code-block:: console
+```.. code-block:: console
 	$ hpcshell --ntasks-per-node=4
 	$ make compile
 	mpic++ -o main collective_communication.cpp maa_bcast.cpp
@@ -27,3 +27,4 @@ Step 4. command: make clearn
 	//A lot of text
 	$ make clean
 	rm main
+```
