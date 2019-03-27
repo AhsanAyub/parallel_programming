@@ -17,7 +17,7 @@ A step by step series of examples that tell you how to get a development env run
 Step 1. Transfer the cpp files and Makefile in the HPC cluster
 Step 2. command: make coompile
 Step 3. command: make run
-Step 4. command: make clearn
+Step 4. command: make clean
 ```
 
 ### Example
