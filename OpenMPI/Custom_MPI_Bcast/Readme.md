@@ -10,10 +10,12 @@ Comparison and Implementation of Custom MPI_Bcast
 
 A step by step series of examples that tell you how to get a development env running
 
+```
 Step 1. Transfer the cpp file and Makeup in HPC cluster
 Step 2. command: make coompile
 Step 3. command: make run
 Step 4. command: make clearn
+```
 
 ### Example:
 ```.. code-block:: console
