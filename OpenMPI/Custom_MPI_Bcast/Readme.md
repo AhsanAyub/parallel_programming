@@ -15,14 +15,15 @@ Step 2. command: make coompile
 Step 3. command: make run
 Step 4. command: make clearn
 
-Example:
->> hpcshell --ntasks-per-node=4
->> make compile
-<Output>
-Matrix Size: 2000, # of Processes: 2, Time: 41.77
->> make run
-<Output>
-Matrix Size: 2000, # of Processes: 2, Time: 41.77
->> make clean
-<Output>
-Matrix Size: 2000, # of Processes: 2, Time: 41.77
+### Example:
+.. code-block:: console
+	$ hpcshell --ntasks-per-node=4
+	$ make compile
+	mpic++ -o main collective_communication.cpp maa_bcast.cpp
+	$ make run
+	mpirun -np 4 ./main
+	....
+	....
+	//A lot of text
+	$ make clean
+	rm main
