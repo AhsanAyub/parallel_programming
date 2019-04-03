@@ -3,10 +3,12 @@
  * The Game of Life
  *		- a serial implementation
  *
- * A cell is born, if it has exactly three neighbours 
- * A cell dies of loneliness, if it has less than two neighbours 
- * A cell dies of overcrowding, if it has more than three neighbours 
- * A cell survives to the next generation, if it does not die of loneliness or overcrowding 
+ * Rules of the game: Adapted from - http://codingdojo.org/kata/GameOfLife/ 
+ *
+ * Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
+ * Any live cell with more than three live neighbours dies, as if by overcrowding.
+ * Any live cell with two or three live neighbours lives on to the next generation.
+ * Any dead cell with exactly three live neighbours becomes a live cell.
  *
  * @author Md. Ahsan Ayub
  * @version 1.1 04/02/2019 
