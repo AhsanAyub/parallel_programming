@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	iChunkRemainder = iRowCount % world_size; // Calculating the remainder to deal with the odd number of processes for later on.
 	
 	// Let all the processes get synchronized
-    MPI_Barrier(MPI_COMM_WORLD);
+    //MPI_Barrier(MPI_COMM_WORLD);
 
 	// Process 0 will initialize the grid and distribute the tasks to other processes
 	if(world_rank == 0)
@@ -224,7 +224,12 @@ int main(int argc, char *argv[])
 
                 // Initialzing the grid slice which needs to be passed via MPI Send
                 int iSizeOfTheRow = iEndRowIndex - iStartRowIndex;
-                int iGridSlice[iSizeOfTheRow][iActualColumnCount];
+                //int iGridSlice[iSizeOfTheRow][iActualColumnCount];
+
+                // Create a local copy
+				int **iGridSlice = new int*[iSizeOfTheRow];
+				for (int iIndex = 0; iIndex < iSizeOfTheRow; iIndex++)
+					iGridSlice[iIndex] = new int[iActualColumnCount];
 
                 // Sending the size of the row
                 MPI_Send(&iSizeOfTheRow, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
@@ -235,19 +240,16 @@ int main(int argc, char *argv[])
                 for(int j = iStartRowIndex, k = 0; j < iEndRowIndex; j++, k++)
                 {
                 	for(int l = 0; l < iActualColumnCount; l++)
-                		iGridSlice[k][l] = iGrid[j][l];
+            		{
+                 		iGridSlice[k][l] = iGrid[j][l];
+                 		cout << iGridSlice[k][l] << "\t";
+                  	}
+                  	cout << endl;
                 }
-
-                for(int j = 0; j < iSizeOfTheRow; j++)
-                {
-                	for(int k = 0; k < iActualColumnCount; k++)
-                		cout << iGridSlice[j][k] << "\t";
-                	cout << endl;
-                }
-                cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
                 // Sending the buffer to the last process
                 MPI_Send(&(iGridSlice[0][0]), iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
+                //MPI_Send(&iGridSlice, iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
 			}            
 
             // Rest of the other processes (1 to n-1) will avail the chunk size partioning only.
@@ -266,7 +268,12 @@ int main(int argc, char *argv[])
 
                 // Initialzing the grid slice which needs to be passed via MPI Send
                 int iSizeOfTheRow = iEndRowIndex - iStartRowIndex;
-                int iGridSlice[iSizeOfTheRow][iActualColumnCount];
+                //int iGridSlice[iSizeOfTheRow][iActualColumnCount];
+
+                // Create a local copy
+				int **iGridSlice = new int*[iSizeOfTheRow];
+				for (int iIndex = 0; iIndex < iSizeOfTheRow; iIndex++)
+					iGridSlice[iIndex] = new int[iActualColumnCount];
 
                 // Sending the size of the row
                 MPI_Send(&iSizeOfTheRow, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
@@ -277,19 +284,16 @@ int main(int argc, char *argv[])
                 for(int j = iStartRowIndex, k = 0; j < iEndRowIndex; j++, k++)
                 {
                 	for(int l = 0; l < iActualColumnCount; l++)
+                 	{
                  		iGridSlice[k][l] = iGrid[j][l];
+                 		cout << iGridSlice[k][l] << "\t";
+                  	}
+                  	cout << endl;
                 }
              	
-             	for(int j = 0; j < iSizeOfTheRow; j++)
-                {
-                	for(int k = 0; k < iActualColumnCount; k++)
-                		cout << iGridSlice[j][k] << "\t";
-                	cout << endl;
-                }
-                cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-
          		// Sending the buffer to process 1 to process n-1
                 MPI_Send(&(iGridSlice[0][0]), iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
+                //MPI_Send(&iGridSlice, iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
             }
         }
 	}
@@ -303,26 +307,28 @@ int main(int argc, char *argv[])
     // Receiving the size of row first
     MPI_Recv(&iRowCount, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    // Now that the size of the row is known by each process, allocating grid
-	allocateGrids(iRowCount, iActualColumnCount);
+    // Create a local copy
+	int **iGridLocal = new int*[iRowCount];
+	for (int i = 0; i < iRowCount; i++)
+		iGridLocal[i] = new int[iActualColumnCount];
 
 	// Calculate the buffer size (for each process)
     int iSizeOfTheBuffer = iRowCount * iActualColumnCount;
 
-    // Create a local copy
-	int **iGridLocal;
-	iGridLocal = new int*[iRowCount];
-	for (int i = 0; i < iRowCount; i++)
-		iGridLocal[i] = new int[iActualColumnCount];
-
-	// Time to receive the slice grids
-    MPI_Recv(&(iGridLocal[0][0]), iSizeOfTheBuffer, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
 	// Let all the processes get synchronized
     MPI_Barrier(MPI_COMM_WORLD);
 
+	// Time to receive the slice grids
+    MPI_Recv(&(iGridLocal[0][0]), iSizeOfTheBuffer, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    //MPI_Recv(&iGridLocal, iSizeOfTheBuffer, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	// Let all the processes get synchronized
+    //MPI_Barrier(MPI_COMM_WORLD);
+
+	cout << "Process: " << world_rank << " | Number of Rows: " << iRowCount << " | Number of Columns: " << iActualColumnCount << " | Buffer Size: " << iSizeOfTheBuffer << endl;
+
 	// Initialization of calculated values in the result matrixs
-    for(int i = 0; i < iRowCount; i++)
+    for(int i = 0 ; i < iRowCount; i++)
     {
         for(int j = 0; j < iActualColumnCount; j++)
         {
