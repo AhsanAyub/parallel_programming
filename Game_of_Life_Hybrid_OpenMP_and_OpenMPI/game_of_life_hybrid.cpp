@@ -131,9 +131,9 @@ int adjacentNeighbors(int i, int j)
 int main(int argc, char *argv[])
 {
 	// Checking the number of input has to be passed by the user
-	if (argc < 3)
+	if (argc != 5)
     {
-        printf("Usuage: ./<executable> <input_file> <iterations> <output_file>\n");
+        printf("Usuage: mpirun -np <# processes> ./<executable> <input_file> <# threads> <iterations> <output_file>\n");
         return -1;
     }
 
