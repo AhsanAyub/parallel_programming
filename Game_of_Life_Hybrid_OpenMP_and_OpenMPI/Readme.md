@@ -2,7 +2,7 @@
 Conway's Game of Life | Implemented with MPI and OpenMP - A Hybrid Approach
 
 ### Description
-The game of life, also known as Life, is a cellular automation devised by the British mathematician John H Conway in 1970 [1]. The game starts from an initial state, and then it requires no further input from the user which makes it a zero-player game. The basic idea is to start with a simple configuration of counters (organisms), one to a cell, then observe how it changes as one applies the following Conway's "genetic laws" for births, deaths, and survivals.
+The game of life, also known as Life, is a cellular automation devised by the British mathematician John H Conway in 1970. The game starts from an initial state, and then it requires no further input from the user which makes it a zero-player game. The basic idea is to start with a simple configuration of counters (organisms), one to a cell, then observe how it changes as one applies the following Conway's "genetic laws" for births, deaths, and survivals.
 
 - Any live cell with fewer than two live neighbors dies, as if caused by underpopulation.
 - Any live cell with more than three live neighbors dies, as if by overcrowding.
