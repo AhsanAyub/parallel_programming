@@ -75,7 +75,7 @@ void printGrid(int iRowCountStart, int iRowCountEnd, int iColumnCountStart, int 
 	for(int i = iRowCountStart; i < iRowCountEnd; i++)
 	{
 		for(int j = iColumnCountStart; j < iColumnCountEnd; j++)
-			cout << iGrid[i][j] << " ";
+			cout << iGrid[i][j] << " ";printf("%s\n", );
 		cout << endl;
 	}
 }
@@ -553,7 +553,7 @@ int main(int argc, char *argv[])
 
         cout << "\n\nProgram Configuration" << endl;
         cout << "Grid Size: " <<  iActualRowCount-2 << " * " << iActualColumnCount-2 << endl;
-        cout << "Processes: " << world_size  << " | Threads: " << thread_count << endl;
+        cout << "Processes: " << world_se  << " | Threads: " << thread_count << endl;
         cout << "Number of generations: " << iGenerations << endl; 
 		cout << "Last generation output has been written to file." << endl;
 	}

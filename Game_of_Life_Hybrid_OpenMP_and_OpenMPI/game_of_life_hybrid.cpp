@@ -11,7 +11,7 @@
  * Any dead cell with exactly three live neighbours becomes a live cell.
  *
  * @author Md. Ahsan Ayub
- * @version 3.0 04/16/2019 
+ * @version 4.2 04/19/2019 
  *
  */
 
@@ -26,7 +26,6 @@ using namespace std;
 
 // Declaring global grid array
 int **iGrid;
-//int **iGridProcessCopy;
 int **iGridNew;
 
 // Actial values will be initialized after knowing the user defined grid dimension
@@ -213,11 +212,11 @@ int main(int argc, char *argv[])
 			//cout << cItem << "\n";
 			iGrid[iCounterRow][iCounterColumn] = cItem - '0';
 			//cout << iGrid[iCounterRow][iCounterColumn] << endl;
-			//if(iGrid[iCounterRow][iCounterColumn] != 0 || iGrid[iCounterRow][iCounterColumn] != 1)
-				//cout << "Invalid input" << endl;
+			
 			//cout << "Row: " << iCounterRow << " , Column: " << iCounterColumn << endl;
 			iCounterColumn++;
 		}
+		cout << "Row: " << iCounterRow << " , Column: " << iCounterColumn << endl;
 
 		cout << "Exit from file input buffering" << endl;
 
@@ -230,7 +229,16 @@ int main(int argc, char *argv[])
 
 		//cout << thread_count << " " << world_size << endl;
 
-		for(int i = 0; i < world_size; i++) 
+		// Calculating the starting and end index for processes 0
+		iStartRowIndex = ((0 * iChunkSize) + 1);
+		iEndRowIndex = iStartRowIndex + iChunkSize;
+
+		// Adding outer layer into consideration
+		iStartRowIndex -= 1;
+		iEndRowIndex += 1;
+
+
+		for(int i = 1; i < world_size; i++) 
         {
         	int iSizeOfTheBuffer;
 
@@ -259,8 +267,8 @@ int main(int argc, char *argv[])
                 // Sending the size of the row
                 MPI_Send(&iSizeOfTheRow, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
 
-                cout << "IF block for Process " << i << " | Buffer Size: " << iSizeOfTheBuffer << endl;
-                cout << "Start Row Index: " << iStartRowIndex << " | End Row Index: " << iEndRowIndex << endl;
+                //cout << "IF block for Process " << i << " | Buffer Size: " << iSizeOfTheBuffer << endl;
+                //cout << "Start Row Index: " << iStartRowIndex << " | End Row Index: " << iEndRowIndex << endl;
 
                 for(int j = iStartRowIndex, k = 0; j < iEndRowIndex; j++, k++)
                 {
@@ -273,12 +281,12 @@ int main(int argc, char *argv[])
                 }
                 //cout << iGridSlice[iSizeOfTheBuffer-2] << endl;
 
-                cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+                //cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
                 // Sending the buffer to the last process
                 MPI_Send(iGridSlice, iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
 
-                cout << "Task distribution send completed.." << endl;
+                //cout << "Task distribution send completed.." << endl;
 
                 // free the allocated array
 				delete[] iGridSlice;
@@ -307,8 +315,8 @@ int main(int argc, char *argv[])
                 // Sending the size of the row
                 MPI_Send(&iSizeOfTheRow, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
 
-                cout << "IF block for Process " << i << " | Buffer Size: " << iSizeOfTheBuffer << endl;
-                cout << "Start Row Index: " << iStartRowIndex << " | End Row Index: " << iEndRowIndex << endl;
+                //cout << "IF block for Process " << i << " | Buffer Size: " << iSizeOfTheBuffer << endl;
+                //cout << "Start Row Index: " << iStartRowIndex << " | End Row Index: " << iEndRowIndex << endl;
 
                 for(int j = iStartRowIndex, k = 0; j < iEndRowIndex; j++, k++)
                 {
@@ -321,75 +329,161 @@ int main(int argc, char *argv[])
                 }
                 //cout << iGridSlice[iSizeOfTheBuffer-2] << endl;
 
-                cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+                //cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
                 // Sending the buffer to the last process
                 MPI_Send(iGridSlice, iSizeOfTheBuffer, MPI_INT, i, 1, MPI_COMM_WORLD);
 
-                cout << "Task distribution send completed.." << endl;
+                //cout << "Task distribution send completed.." << endl;
 
                 // free the allocated array
 				delete[] iGridSlice;
 			}
         }
+        cout << "Task distribution send completed.." << endl;
 	}
-
-	// Done reading from the file
-	fInput.close();
-	
-	// Let all the processes get synchronized
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Receiving the size of row first
-    MPI_Recv(&iRowCount, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    cout << "Process: " << world_rank << endl;
-
-	// Calculate the buffer size (for each process)
-    int iSizeOfTheBuffer = iRowCount * iActualColumnCount;
-
-    // Create a local copy
-	int *iGridLocal = new int[iSizeOfTheBuffer];
-	int *iGridFinalLocal = new int[iRowCount*(iActualColumnCount - 2)];
-
-	// Let all the processes get synchronized
-    //MPI_Barrier(MPI_COMM_WORLD);
-
-	// Time to receive the slice grids
-    MPI_Recv(iGridLocal, iSizeOfTheBuffer, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-	cout << "Process: " << world_rank << " | Number of Rows: " << iRowCount << " | Number of Columns: " << iActualColumnCount << " | Buffer Size: " << iSizeOfTheBuffer << endl;
-	
-	// Now, create two grids for generations.
-	allocateGrids(iRowCount, iActualColumnCount);
-
-	// Let all the processes get synchronized
-    //MPI_Barrier(MPI_COMM_WORLD);
-
-	// Assigning 1D array values to 2D above created array
-	int iTempIndex = 0;
-	for(int i = 0; i < iRowCount; i++)
+	else
 	{
-		for(int j = 0; j < iActualColumnCount; j++)
+		// Let all the processes get synchronized
+	    //MPI_Barrier(MPI_COMM_WORLD);
+
+	    // Receiving the size of row first
+	    MPI_Recv(&iRowCount, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	    //cout << "Process: " << world_rank << endl;
+
+		// Calculate the buffer size (for each process)
+	    int iSizeOfTheBuffer = iRowCount * iActualColumnCount;
+
+	    // Create a local copy
+		int *iGridLocal = new int[iSizeOfTheBuffer];
+		
+		// Let all the processes get synchronized
+	    //MPI_Barrier(MPI_COMM_WORLD);
+
+		// Time to receive the slice grids
+	    MPI_Recv(iGridLocal, iSizeOfTheBuffer, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		//cout << "Process: " << world_rank << " | Number of Rows: " << iRowCount << " | Number of Columns: " << iActualColumnCount << " | Buffer Size: " << iSizeOfTheBuffer << endl;
+		
+		// Now, create two grids for generations.
+		allocateGrids(iRowCount, iActualColumnCount);
+
+		// Let all the processes get synchronized
+	    //MPI_Barrier(MPI_COMM_WORLD);
+
+		// Assigning 1D array values to 2D above created array
+		int iTempIndex = 0;
+		for(int i = 0; i < iRowCount; i++)
 		{
-			iGrid[i][j] = iGridNew[i][j] = iGridLocal[iTempIndex];
-			iTempIndex += 1;
-			cout << iGrid[i][j] << " ";
+			for(int j = 0; j < iActualColumnCount; j++)
+			{
+				iGrid[i][j] = iGridNew[i][j] = iGridLocal[iTempIndex];
+				iTempIndex += 1;
+				//cout << iGrid[i][j] << " ";
+			}
+			//cout << endl;
 		}
-		cout << endl;
+
+		//cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	}
 
-	cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	if(world_rank == 0)
+		iRowCount =  iEndRowIndex - iStartRowIndex;
 
 	int iThreadChunk = iRowCount / thread_count;
 	int iThreadChunkRemainder = iRowCount % thread_count;
 	int iThreadStartIndex = -1, iThreadEndIndex = -1;
 
+	// Let all the processes get synchronized
+	//MPI_Barrier(MPI_COMM_WORLD);
+
+	cout << "Process " << world_rank << endl;
+	cout << "Row Index Starts: 1 | Row Index Ends: " << (iRowCount - 1) << " | Column Starts: 1 | Column Ends: " << (iActualColumnCount - 1) << endl;  
+
+	/*for(int i = 1; i < (iRowCount - 1); i++)
+	{
+		for(int j = 1; j < (iActualColumnCount - 1); j++)
+			cout << iGrid[i][j] << " ";
+		cout << endl;
+	}
+	cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;*/
+
 	// All set for the game
 	for(int iSteps = 1; iSteps <= iGenerations; iSteps++)
 	{
 		// Let all the processes get synchronized
-    	//MPI_Barrier(MPI_COMM_WORLD);
+    	MPI_Barrier(MPI_COMM_WORLD);
+    	
+    	//cout << "Process: " << world_rank << " | Generation: " << iSteps << " | Row Count: " << iRowCount << endl;
+
+    	if(iSteps != 1) // Performing halo exchange from 2nd generation onwards
+    	{
+    		
+    		// Create local copies
+			int *topRowSend = new int[iActualColumnCount - 2];
+			int *topRowRecv = new int[iActualColumnCount - 2];
+			int *bottomRowSend = new int[iActualColumnCount - 2];
+			int *bottomRowRecv = new int[iActualColumnCount - 2];
+
+			// Copying row elements
+			for(int i = 1; i < iActualColumnCount - 1; i++)
+			{
+				topRowSend[i] = iGrid[1][i];
+				bottomRowSend[i] = iGrid[iRowCount-2][i];
+				//cout << world_rank << " | " << topRowSend[i] << " " << bottomRowSend[i] << endl;
+			}
+    		    					
+			// Bottom halo exchange
+			// For example, bottow row of Process 0 will be transferred to the top row of Process 1
+			MPI_Sendrecv(bottomRowSend, iActualColumnCount - 2, MPI_INT,
+                ((world_rank - 1) + world_size) % world_size, 1,
+                topRowRecv, iActualColumnCount - 2, MPI_INT,
+                ((world_rank + 1) + world_size) % world_size, 1,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+			// Top halo exchange
+			// For example, top row of Process 1 will be transferred to the bottom row of Process 0
+    		MPI_Sendrecv(topRowSend, iActualColumnCount - 2, MPI_INT,
+                ((world_rank + 1) + world_size) % world_size, 2,
+                bottomRowRecv, iActualColumnCount - 2, MPI_INT,
+                ((world_rank - 1) + world_size) % world_size, 2,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+			// Now updating the rows of the grid
+			for(int i = 1; i < iActualColumnCount - 1; i++)
+			{
+				iGrid[0][i] = topRowRecv[i];
+				iGrid[iRowCount-1][i] = bottomRowRecv[i];
+				//cout << world_rank << " | " << topRowRecv[i] << " " << bottomRowRecv[i] << endl;
+			}
+
+			// Now updating the columns of the grid
+			for(int i = 0; i < iActualColumnCount; i++)
+			{
+				// Add left layer which is the copy of the iColumnCount st stride column-wise.
+				for(int i = 1; i <= (iRowCount - 2); i++)
+					iGrid[i][0] = iGrid[i][iActualColumnCount - 2];
+
+				// Add right layer which is the copy of the 1 st stride column-wise.
+				for(int i = 1; i <= (iRowCount - 2); i++)
+					iGrid[i][iActualColumnCount-1] = iGrid[i][1];
+			}
+
+			// Diagonal copies
+			iGrid[0][0] = iGrid[iRowCount - 2][iActualColumnCount - 2];	// Upper Left
+			iGrid[0][iActualColumnCount - 1] = iGrid[iRowCount - 2][1];	// Upper Right
+			iGrid[iRowCount - 1][0] = iGrid[1][iActualColumnCount - 2];	// Lower Left
+			iGrid[iRowCount - 1][iActualColumnCount - 1] = iGrid[1][1];	// Lower Right
+
+			cout << "Halo exchange successfully done for Process " << world_rank << endl;
+
+			// free the allocated array
+			delete[] topRowSend;
+			delete[] topRowRecv;
+			delete[] bottomRowSend;
+			delete[] bottomRowRecv;
+    	}
 
 		// geting into the OpenMP parallel region
 		#pragma omp parallel firstprivate(iThreadStartIndex, iThreadEndIndex) num_threads(thread_count)
@@ -402,25 +496,30 @@ int main(int argc, char *argv[])
     			iThreadEndIndex = iThreadChunkRemainder;
     		else
     			iThreadEndIndex = iThreadStartIndex + iThreadChunk;
+    		
     		//cout << "Process: " << world_rank << " | Chunk: " << iThreadChunk << " | Thread: " << iMyRank << " | Start Index: " << iThreadStartIndex << " | End Index: " << iThreadEndIndex << endl;
 
-    		for(int i = iThreadStartIndex; i < iThreadEndIndex; i++)
+    		for(int i = iThreadStartIndex; i < iThreadEndIndex; i++) // Iteration through row
     		{
-    			if(i == 0 || i == iRowCount-1)
+    			if(i == 0 || i == iRowCount-1) // Avoiding the halos
     				continue;
     			
     			//cout << world_rank << "\t" << iMyRank << "\t" << i << endl;
 
-    			for(int i = 1; i < (iRowCount - 1); i++)
-					for(int j = 1; j < (iActualColumnCount - 1); j++)
-						iGridNew[i][j] = adjacentNeighbors(i, j);
+    			//for(int i = 1; i < (iRowCount - 1); i++) || Wrong!!!!
+					for(int j = 1; j < (iActualColumnCount - 1); j++) // Iteration through column
+						{
+							iGridNew[i][j] = adjacentNeighbors(i, j);
+							//cout << iGridNew[i][j] << endl;
+							if (world_rank == 0)// && iMyRank == 0)
+							{
+								//cout << i << " " << j << " | " << iGridNew[i][j] << endl;
+							}
+						}
     		}
+    		//cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
     	}
-    	//cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-
-		/*for(int i = 1; i < (iRowCount - 1); i++)
-			for(int j = 1; j < (iActualColumnCount - 1); j++)
-				iGridNew[i][j] = adjacentNeighbors(i, j);*/
+    	
 
 		// Time to create a copy of the new generated state to the older one
 		// as a reference to create the newer one in the next generation
@@ -428,13 +527,24 @@ int main(int argc, char *argv[])
 	}
 
 	// Let all the processes get synchronized
-    //MPI_Barrier(MPI_COMM_WORLD);
+	//MPI_Barrier(MPI_COMM_WORLD);
+
+	/*cout << "Process " << world_rank << endl;
+
+	for(int i = 1; i < (iRowCount - 1); i++)
+	{
+		for(int j = 1; j < (iActualColumnCount - 1); j++)
+			cout << iGridNew[i][j] << " ";
+		cout << endl;
+	}*/
 
 	// Copy the final copy to a 1D array for sending it to 
 	if(world_rank)
 	{
 		//cout << "Process " << world_rank << " final copy." << endl;
-		iTempIndex = 0;
+		int iTempIndex = 0;
+		int *iGridFinalLocal = new int[iRowCount*(iActualColumnCount - 2)];
+
 		for(int i = 1; i < (iRowCount - 1); i++)
 		{
 			for(int j = 1; j < (iActualColumnCount - 1); j++)
@@ -472,11 +582,11 @@ int main(int argc, char *argv[])
 		{
 			for(int j = 1; j < (iActualColumnCount - 1); j++)
 			{
-				cout << iGrid[i][j]  << " "; 
+				//cout << iGrid[i][j]  << " "; 
 				fOutput << iGrid[i][j] << " ";
 			}
 			fOutput << endl;
-			cout << endl;
+			//cout << endl;
 		}
 
 		// Last, time  other processes' result
@@ -498,13 +608,13 @@ int main(int argc, char *argv[])
 				if(i % (iActualColumnCount - 2) == 0 && i != 0)
 				{
 					fOutput << endl;
-					cout << endl;
+					//cout << endl;
 				}
 				fOutput << iGridFinaLocalCopy[i] << " ";
-				cout << iGridFinaLocalCopy[i] << " ";
+				//cout << iGridFinaLocalCopy[i] << " ";
 			}
 			fOutput << endl;
-			cout << endl;
+			//cout << endl;
 
 			// free the allocated array
 			delete[] iGridFinaLocalCopy;
@@ -516,17 +626,20 @@ int main(int argc, char *argv[])
 		// Calculate the time of the program
         cout << "Execution time: " << dEndTime - dStartTime << endl;
 
-        cout << "\n\nProgram Confguaration" << endl;
+        cout << "\n\nProgram Configuration" << endl;
         cout << "Grid Size: " <<  iActualRowCount-2 << " * " << iActualColumnCount-2 << endl;
         cout << "Processes: " << world_size  << " | Threads: " << thread_count << endl;
         cout << "Number of generations: " << iGenerations << endl; 
 		cout << "Last generation output has been written to file." << endl;
 	}
+	// Done reading from the file
+	fInput.close();
 
 	// Done writing to the file
 	fOutput.close();
 
 	// Finalize the MPI environment.
     MPI_Finalize();
+
 	return 0;
 }
